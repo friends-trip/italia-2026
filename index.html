@@ -403,31 +403,33 @@ section.active{display:block;}
 }
 .toast.show{opacity:1;}
 
-/* MOBILE NAV — BOTTOM */
+/* MOBILE NAV — TOP */
 .mob-nav{
   display:none;
-  position:fixed;bottom:0;left:0;right:0;z-index:2000;
-  background:var(--white);
-  border-top:3px solid var(--outline);
-  box-shadow:0 -3px 0 var(--outline);
-  padding:6px 4px env(safe-area-inset-bottom, 10px);
-  justify-content:space-around;align-items:center;
-  min-height:64px;
+  position:fixed;top:0;left:0;right:0;z-index:2000;
+  background:var(--hot);
+  border-bottom:3px solid var(--outline);
+  box-shadow:0 3px 0 var(--outline);
+  padding-top:env(safe-area-inset-top, 0px);
+  padding-left:4px;padding-right:4px;padding-bottom:0;
+  height:calc(56px + env(safe-area-inset-top, 0px));
+  justify-content:space-around;align-items:flex-end;
+  padding-bottom:4px;
 }
 .mob-btn{
-  display:flex;flex-direction:column;align-items:center;gap:3px;
-  padding:6px 8px;border-radius:12px;background:none;border:none;
-  cursor:pointer;transition:.18s;min-width:48px;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:6px 8px;border-radius:10px;background:none;border:none;
+  cursor:pointer;transition:.18s;min-width:48px;min-height:44px;
   justify-content:center;-webkit-tap-highlight-color:transparent;
   flex:1;
 }
-.mob-btn.active{background:var(--pink);}
-.mob-btn span:first-child{font-size:1.4rem;line-height:1;}
+.mob-btn.active{background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.5);}
+.mob-btn span:first-child{font-size:1.3rem;line-height:1;}
 .mob-btn span:last-child{
-  font-size:.5rem;font-weight:800;letter-spacing:.5px;
-  text-transform:uppercase;color:#aaa;
+  font-size:.48rem;font-weight:800;letter-spacing:.5px;
+  text-transform:uppercase;color:rgba(255,255,255,.7);
 }
-.mob-btn.active span:last-child{color:var(--hot);}
+.mob-btn.active span:last-child{color:var(--white);}
 
 /* ANIMATIONS */
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
@@ -442,12 +444,12 @@ section.active{display:block;}
 @media(max-width:640px){
   nav{display:none;}
   .mob-nav{display:flex;}
-  section{padding-top:24px;padding-bottom:90px;}
-  #home{padding-top:24px;}
+  section{padding-top:calc(70px + env(safe-area-inset-top, 0px));padding-bottom:30px;}
+  #home{padding-top:calc(70px + env(safe-area-inset-top, 0px));padding-bottom:40px;}
   .tl-wrap::before{left:10px;}
   .day-card{margin-left:32px;}
   .day-card::before{left:-26px;}
-  .admin-toggle{bottom:80px;right:16px;}
+  .admin-toggle{bottom:24px;right:16px;}
   .toast{bottom:80px;}
 }
 </style>
