@@ -58,6 +58,27 @@ section.active{display:block;}
   background-size:22px 22px;opacity:.55;
 }
 .flag-stripe{position:absolute;top:0;left:0;right:0;height:10px;background:linear-gradient(to right,#009246 33%,#fff 33% 66%,#CE2B37 66%);border-bottom:2px solid var(--outline);z-index:2;}
+
+/* HOME BANNER */
+.home-banner{
+  position:relative;z-index:10;
+  width:100%;max-width:480px;
+  background:var(--outline);color:var(--yellow);
+  border:3px solid var(--yellow);border-radius:14px;
+  padding:12px 40px 12px 16px;
+  font-size:.9rem;font-weight:800;
+  box-shadow:4px 4px 0 var(--yellow);
+  text-align:center;margin-bottom:16px;
+  animation:banner-pulse 2s ease-in-out infinite;
+}
+@keyframes banner-pulse{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.02);}
+}
+.hb-close{
+  position:absolute;top:8px;right:10px;
+  cursor:pointer;font-size:.9rem;opacity:.7;
+}
 .pizza-hero-wrap{position:relative;z-index:2;margin-bottom:4px;animation:pizza-bob 3s ease-in-out infinite;filter:drop-shadow(4px 6px 0 var(--outline));}
 @keyframes pizza-bob{0%,100%{transform:translateY(0) rotate(-4deg);}50%{transform:translateY(-14px) rotate(4deg);}}
 .home-eyebrow{font-family:'Space Mono',monospace;color:var(--outline);font-size:.65rem;letter-spacing:3px;text-transform:uppercase;margin-top:8px;margin-bottom:6px;z-index:2;position:relative;background:var(--yellow);display:inline-block;padding:3px 12px;border-radius:100px;border:2px solid var(--outline);box-shadow:2px 2px 0 var(--outline);}
@@ -445,6 +466,12 @@ section.active{display:block;}
 <!-- HOME -->
 <section id="home" class="active">
   <div class="flag-stripe"></div>
+
+  <!-- BANNER ADMIN -->
+  <div class="home-banner" id="homeBanner" style="display:none">
+    <span id="homeBannerText"></span>
+    <span class="hb-close" onclick="closeBanner()">✕</span>
+  </div>
   <div class="pizza-hero-wrap">
     <svg width="240" height="220" viewBox="0 0 240 220" xmlns="http://www.w3.org/2000/svg">
       <path d="M30 30 Q120 10 210 30 L170 140 Q120 160 70 140 Z" fill="#D97706" stroke="#1E0A14" stroke-width="4" stroke-linejoin="round"/>
@@ -631,14 +658,16 @@ section.active{display:block;}
         <!-- TAB NOTAS -->
         <div class="admin-panel" id="ap-notas">
           <div class="admin-field">
-            <label>📌 Observação geral da viagem</label>
-            <textarea class="admin-input" id="aN-obs" placeholder="Notas importantes para o grupo..."></textarea>
+            <label>🚨 Banner na Home (aparece pra todo mundo)</label>
+            <input class="admin-input" type="text" id="aN-banner" placeholder="Ex: PAGAR A JESSICA 💸">
+            <p style="font-size:.68rem;color:#aaa;margin-top:4px">Deixe vazio para esconder o banner</p>
           </div>
-          <div class="admin-field">
-            <label>🚨 Alerta urgente (aparece em destaque)</label>
-            <input class="admin-input" type="text" id="aN-alert" placeholder="Ex: Confirmar horário do Coliseu!">
+          <div class="admin-field" style="margin-top:16px">
+            <label>🚨 Alertas importantes (um por linha)</label>
+            <textarea class="admin-input" id="aN-alerts" placeholder="⚠️ Confirmar horário Coliseu&#10;💸 Pagar a Jessica&#10;🎟️ Comprar ingresso Pantheon" style="min-height:140px"></textarea>
+            <p style="font-size:.68rem;color:#aaa;margin-top:4px">Cada linha vira um card de alerta na seção Extras</p>
           </div>
-          <button class="admin-btn" onclick="saveNotes()">💾 Salvar notas</button>
+          <button class="admin-btn" onclick="saveNotes()">💾 Salvar</button>
         </div>
 
         <!-- TAB CONFIG -->
@@ -775,8 +804,9 @@ function loadData(){
     const d=JSON.parse(saved);
     if(d.tickets) d.tickets.forEach(dt=>{const t=tickets.find(x=>x.id===dt.id);if(t){t.s=dt.s;t.app=dt.app;t.obs=dt.obs;t.lnk=dt.lnk;}});
     if(d.clStates) clStates={...d.clStates};
+    if(d.notes) applyNotes(d.notes);
   }
-  // sync checklist from ticket statuses
+  window._customAlerts = window._customAlerts || [];
   CHECKLIST.forEach(cat=>{
     cat.items.forEach((item,i)=>{
       const key=cat.cat+'_'+i;
@@ -952,12 +982,15 @@ function renderExtras(){
     <div class="ex-card fin"><h3>📍 Dias em Cada Cidade</h3>
       ${[['🏛️ Roma',3,'22-24/06'],['🌋 Nápoles',2,'24-26/06'],['🍋 Sorrento + Costa',6,'26/06-01/07'],['🌺 Florença + Pisa',3,'01-04/07'],['👗 Milão + Suíça',3,'04-07/07'],['🚣 Veneza',2,'07-09/07']].map(x=>`<div class="city-counter"><div><div class="cc-city">${x[0]}</div><div style="font-size:.63rem;color:#aaa;font-family:'Space Mono',monospace">${x[2]}</div></div><div style="text-align:right"><div class="cc-days">${x[1]}</div><div style="font-size:.6rem;color:#aaa;font-weight:800">DIAS</div></div></div>`).join('')}
     </div>
-    <div class="ex-card fin"><h3>🚨 Alertas Importantes</h3>
-      ${['⚠️ Galleria Dell\'Accademia: compre com MESES de antecedência!','🍕 Pizzeria da Michele Nápoles: chegar cedo (sem reserva)','🕊️ Audiência papal 24/06: confirmar no site do Vaticano','⛪ Igrejas: ombros e joelhos cobertos obrigatório','🚂 Trens: validar bilhete ANTES de embarcar!','💳 Alguns lugares: só dinheiro vivo — tenha euros!','☀️ Julho = altíssima temporada — tudo lotado!','🇨🇭 Suíça: euro não aceito — cartão sim!'].map(a=>`<div class="alert-item">${a}</div>`).join('')}
-    </div>
+    <div class="ex-card fin"><h3>🚨 Alertas Importantes</h3><div id="alertsContainer"></div></div>
     <div class="ex-card fin"><h3>🔗 Links Úteis</h3>
       ${[['🚂','Trenitalia','Trens na Itália','https://www.trenitalia.com'],['🚂','Italo Treno','Trens alta velocidade','https://www.italotreno.it'],['⛵','Alilauro','Balsas Nápoles/Sorrento','https://www.alilauro.it'],['🏟️','Coliseu (Coopculture)','Ingressos oficiais','https://www.coopculture.it'],['⛪','Museus Vaticanos','Ingressos Vaticano','https://www.museivaticani.va'],['🗿','Accademia Florença','Galleria Dell\'Accademia','https://www.galleriaaccademiafirenze.it'],['🏛️','Pantheon Roma','Ingressos Pantheon','https://pantheonroma.com'],['🌤️','Previsão do tempo','Clima nas cidades','https://weather.com/pt-BR']].map(l=>`<a href="${l[3]}" target="_blank" class="link-item"><span class="li-icon">${l[0]}</span><div><div class="li-name">${l[1]}</div><div class="li-desc">${l[2]}</div></div><span class="li-arr">→</span></a>`).join('')}
     </div>`;
+  // Render alerts dynamically
+  const DEFAULT_ALERTS=['⚠️ Galleria Dell\'Accademia: compre com MESES de antecedência!','🍕 Pizzeria da Michele Nápoles: chegar cedo (sem reserva)','🕊️ Audiência papal 24/06: confirmar no site do Vaticano','⛪ Igrejas: ombros e joelhos cobertos obrigatório','🚂 Trens: validar bilhete ANTES de embarcar!','💳 Alguns lugares: só dinheiro vivo — tenha euros!','☀️ Julho = altíssima temporada — tudo lotado!','🇨🇭 Suíça: euro não aceito — cartão sim!'];
+  const customAlerts=window._customAlerts&&window._customAlerts.length?window._customAlerts:DEFAULT_ALERTS;
+  const ac=document.getElementById('alertsContainer');
+  if(ac) ac.innerHTML=customAlerts.map(a=>`<div class="alert-item">${a}</div>`).join('');
 }
 
 // ── PERSON MODAL ──
@@ -1107,7 +1140,48 @@ function toggleAdminTicket(id,el){
   CHECKLIST.forEach(cat=>{cat.items.forEach((item,i)=>{if(item.tid===id){item.ok=(t.s==='ok');clStates[cat.cat+'_'+i]=item.ok;}});});
 }
 function saveAdminData(){saveData();renderTickets();renderTimeline();renderChecklist();showToast('💾 Salvo com sucesso!');closeAdmin();}
-function saveNotes(){const obs=document.getElementById('aN-obs').value;const alert=document.getElementById('aN-alert').value;const d=JSON.parse(localStorage.getItem(DATA_KEY)||'{}');d.notes={obs,alert};localStorage.setItem(DATA_KEY,JSON.stringify(d));showToast('📝 Notas salvas!');closeAdmin();}
+function saveNotes(){
+  const banner=document.getElementById('aN-banner').value.trim();
+  const alertsRaw=document.getElementById('aN-alerts').value.trim();
+  const d=JSON.parse(localStorage.getItem(DATA_KEY)||'{}');
+  d.notes={banner, alerts:alertsRaw};
+  localStorage.setItem(DATA_KEY,JSON.stringify(d));
+  applyNotes({banner,alerts:alertsRaw});
+  showToast('💾 Salvo! Banner e alertas atualizados!');
+  closeAdmin();
+}
+
+function applyNotes(notes){
+  if(!notes) return;
+  // Banner
+  const bannerEl=document.getElementById('homeBanner');
+  const bannerTxt=document.getElementById('homeBannerText');
+  if(bannerEl && bannerTxt){
+    if(notes.banner){
+      bannerTxt.textContent=notes.banner;
+      bannerEl.style.display='flex';
+      bannerEl.style.alignItems='center';
+      bannerEl.style.justifyContent='center';
+    } else {
+      bannerEl.style.display='none';
+    }
+  }
+  // Alertas dinâmicos
+  if(notes.alerts!==undefined){
+    window._customAlerts = notes.alerts ? notes.alerts.split('\n').filter(a=>a.trim()) : [];
+  }
+  renderExtras();
+  // Preencher campos do admin se estiver aberto
+  const bInput=document.getElementById('aN-banner');
+  const aInput=document.getElementById('aN-alerts');
+  if(bInput) bInput.value=notes.banner||'';
+  if(aInput) aInput.value=notes.alerts||'';
+}
+
+function closeBanner(){
+  const b=document.getElementById('homeBanner');
+  if(b) b.style.display='none';
+}
 function changePwd(){const p=document.getElementById('aN-newpwd').value.trim();if(!p){showToast('❌ Digite uma senha!');return;}localStorage.setItem(ADMIN_PWD_KEY,p);showToast('🔑 Senha alterada!');}
 function resetAll(){if(confirm('Apagar todos os dados salvos?')){localStorage.removeItem(DATA_KEY);location.reload();}}
 
